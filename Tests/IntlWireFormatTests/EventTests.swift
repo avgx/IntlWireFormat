@@ -53,7 +53,7 @@ struct IntlWireFormatTests {
         expectedText: String
     ) throws {
         let decoder = JSONDecoder()
-        let item = try decoder.decode(IntlWireFormat.Event.self, from: string.data(using: .utf8)!)
+        let item = try decoder.decode(Event.self, from: string.data(using: .utf8)!)
         #expect(item.objectId == expectedObjectId)
         #expect(item.action == expectedAction)
         #expect(item.text == expectedText)
