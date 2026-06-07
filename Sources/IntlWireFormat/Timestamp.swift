@@ -2,24 +2,52 @@ import Foundation
 
 /// Wire timestamp formats used by Intellect (Intl) APIs.
 public enum Timestamp {
-    /// Events and queries: `yyyy-MM-dd'T'HH:mm:ss.SSSXXX` in UTC.
-    public static let utc = makeFormatter(
+    /// ISO8601 for event `ts` and for parsing strings that include an offset.
+    public static let event = makeFormatter(
         format: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
         timeZone: TimeZone(identifier: "UTC")!
     )
-    
-    /// Events and queries in the device local time zone.
+
+    /// ISO8601 in UTC (legacy name — prefer ``event`` for parsing, ``formatEventQuery(_:)`` for queries).
+    public static let utc = event
+
+    /// ISO8601 in the device local time zone — used to format `from`/`to` on `secure/events`.
     public static let local = makeFormatter(
         format: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
         timeZone: TimeZone.current
     )
-    
+
     /// Archive playback: `yyyyMMdd'T'HHmmss.SSSXXX` in UTC.
     public static let archiveUTC = makeFormatter(
         format: "yyyyMMdd'T'HHmmss.SSSXXX",
         timeZone: TimeZone(identifier: "UTC")!
     )
-    
+
+    /// Parses event `ts` from JSON (`2024-06-04T13:14:03.000+03:00`). Offset in the string is authoritative.
+    public static func parseEvent(_ raw: String) -> Date? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if let date = event.date(from: trimmed) { return date }
+        return eventNoFraction.date(from: trimmed)
+    }
+
+    /// Formats `from`/`to` query values for `secure/events` (server uses local wall time, not UTC digits).
+    public static func formatEventQuery(_ date: Date) -> String {
+        local.string(from: date)
+    }
+
+    /// Percent-encodes a query value for Intellect Jersey GET requests (`+` in timezone offset → `%2B`).
+    public static func percentEncodedQueryValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+    }
+
+    private static let eventNoFraction = makeFormatter(
+        format: "yyyy-MM-dd'T'HH:mm:ssXXX",
+        timeZone: TimeZone(identifier: "UTC")!
+    )
+
     static func makeFormatter(format: String, timeZone: TimeZone) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .iso8601)

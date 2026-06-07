@@ -57,5 +57,24 @@ struct IntlWireFormatTests {
         #expect(item.objectId == expectedObjectId)
         #expect(item.action == expectedAction)
         #expect(item.text == expectedText)
+        #expect(item.timestamp != nil)
+    }
+
+    @Test func decodeEventTimestampField() throws {
+        let json = """
+        {"id":"{1}","objectId":"CAM:1","ts":"2026-06-07T12:27:58.823+03:00","description":"x"}
+        """
+        let event = try JSONDecoder().decode(Event.self, from: Data(json.utf8))
+        #expect(event.timestamp != nil)
+        #expect(event.ts == "2026-06-07T12:27:58.823+03:00")
+    }
+
+    @Test func decodeEventWithoutTimestamp() throws {
+        let json = """
+        {"id":"{2}","objectId":"CAM:2","description":"no ts"}
+        """
+        let event = try JSONDecoder().decode(Event.self, from: Data(json.utf8))
+        #expect(event.ts == nil)
+        #expect(event.timestamp == nil)
     }
 }

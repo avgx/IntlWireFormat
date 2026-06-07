@@ -26,13 +26,13 @@ Format: `yyyyMMdd'T'HHmmss.SSSXXX`
 ```swift
 import IntlWireFormat
 
-let utc = Timestamp.utc
-let date = utc.date(from: "2026-04-07T11:43:20.102+03:00")
+let date = Timestamp.parseEvent("2026-04-07T11:43:20.102+03:00")
+
+// secure/events query params — local wall time, not UTC digits:
+let queryTo = Timestamp.formatEventQuery(Date())
 
 let archive = Timestamp.archiveUTC
 let archiveString = archive.string(from: date!)
-
-let local = Timestamp.local // TimeZone.current
 ```
 
 ## WebSocket event payloads

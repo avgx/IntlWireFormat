@@ -60,6 +60,11 @@ struct TimestampTests {
         #expect(Timestamp.local.timeZone == TimeZone.current)
     }
 
+    @Test func percentEncodedQueryValue_encodesPlusInOffset() {
+        let encoded = Timestamp.percentEncodedQueryValue("2026-06-07T00:00:00.000+03:00")
+        #expect(encoded == "2026-06-07T00:00:00.000%2B03:00")
+    }
+
     @Test func utcFormatter_usesUTC() {
         #expect(Timestamp.utc.timeZone == TimeZone(identifier: "UTC"))
     }
