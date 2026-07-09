@@ -38,4 +38,21 @@ extension AccessPoint {
     public init(objectClass: ObjectClass, objectId: ObjectID) {
         self = "\(objectClass):\(objectId)"
     }
+
+    /// `Class:Id` with both components non-empty.
+    public var isValidAccessPoint: Bool {
+        guard let components else { return false }
+        return !components.objectClass.isEmpty && !components.objectId.isEmpty
+    }
+
+    public func requireValidAccessPoint() throws -> AccessPoint {
+        guard isValidAccessPoint else {
+            throw AccessPointValidationError.invalid(self)
+        }
+        return self
+    }
+}
+
+public enum AccessPointValidationError: Error, Equatable, Sendable {
+    case invalid(AccessPoint)
 }

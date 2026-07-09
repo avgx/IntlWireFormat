@@ -25,4 +25,12 @@ import Testing
     #expect(AccessPoint("GRAY:").objectClass == "GRAY")
     #expect(AccessPoint("GRAY:").accessPointObjectId == "")
     #expect(AccessPoint("no-colon").components == nil)
+    #expect(!AccessPoint("GRAY:").isValidAccessPoint)
+}
+
+@Test func accessPointValidWhenBothComponentsPresent() {
+    #expect(AccessPoint("CAM:34").isValidAccessPoint)
+    #expect(!AccessPoint("CAM:").isValidAccessPoint)
+    #expect(!AccessPoint("no-colon").isValidAccessPoint)
+    #expect(AccessPoint("REGION:1.1").isValidAccessPoint)
 }
