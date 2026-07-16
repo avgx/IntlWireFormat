@@ -39,10 +39,11 @@ extension AccessPoint {
         self = "\(objectClass):\(objectId)"
     }
 
-    /// `Class:Id` with both components non-empty.
+    /// `Class:Id` with both components non-empty; rejects placeholder ids like `LINK:null`.
     public var isValidAccessPoint: Bool {
         guard let components else { return false }
-        return !components.objectClass.isEmpty && !components.objectId.isEmpty
+        guard !components.objectClass.isEmpty, !components.objectId.isEmpty else { return false }
+        return components.objectId.lowercased() != "null"
     }
 
     public func requireValidAccessPoint() throws -> AccessPoint {

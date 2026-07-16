@@ -33,4 +33,6 @@ import Testing
     #expect(!AccessPoint("CAM:").isValidAccessPoint)
     #expect(!AccessPoint("no-colon").isValidAccessPoint)
     #expect(AccessPoint("REGION:1.1").isValidAccessPoint)
+    #expect(!AccessPoint("LINK:null").isValidAccessPoint)
+    #expect(!AccessPoint("LINK:NULL").isValidAccessPoint)
 }
