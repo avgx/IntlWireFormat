@@ -72,4 +72,36 @@ struct TimestampTests {
     @Test func archiveUTC_usesUTC() {
         #expect(Timestamp.archiveUTC.timeZone == TimeZone(identifier: "UTC"))
     }
+
+    @Test(arguments: [
+        "20250909T112216Z",
+        "20250909T112216",
+        "20250909T112216.123Z",
+        "20250909T112216.123000",
+        "20121205T084057.740000",
+    ]) func parseArchiveUTC_acceptsCommonVariants(string: String) {
+        #expect(Timestamp.parseArchiveUTC(string) != nil)
+    }
+
+    @Test func parseArchiveUTC_matchesArchiveUTCFormatter() throws {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = DateComponents(
+            calendar: calendar,
+            timeZone: TimeZone(identifier: "UTC"),
+            year: 2025,
+            month: 9,
+            day: 9,
+            hour: 11,
+            minute: 22,
+            second: 16
+        )
+        let expected = try #require(components.date)
+        let formatted = archiveUTC.string(from: expected)
+        let parsed = try #require(Timestamp.parseArchiveUTC(formatted))
+        #expect(abs(parsed.timeIntervalSince(expected)) < 0.001)
+
+        let fromZ = try #require(Timestamp.parseArchiveUTC("20250909T112216Z"))
+        #expect(abs(fromZ.timeIntervalSince(expected)) < 0.001)
+    }
 }

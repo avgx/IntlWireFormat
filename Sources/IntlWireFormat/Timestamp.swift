@@ -31,6 +31,36 @@ public enum Timestamp {
         return eventNoFraction.date(from: trimmed)
     }
 
+    /// Parses Intl RTSP archive `Timestamps` track payloads.
+    ///
+    /// Accepts ``archiveUTC`` wire form and common variants without fractional
+    /// seconds and/or with a bare trailing `Z` (e.g. `20250909T112216Z`).
+    public static func parseArchiveUTC(_ raw: String) -> Date? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if let date = archiveUTC.date(from: trimmed) { return date }
+        if let date = archiveUTCNoFraction.date(from: trimmed) { return date }
+
+        // Intl often emit `yyyyMMdd'T'HHmmss[.SSS]Z` without a colon offset.
+        let withoutZ: String
+        if trimmed.hasSuffix("Z") || trimmed.hasSuffix("z") {
+            withoutZ = String(trimmed.dropLast())
+        } else {
+            withoutZ = trimmed
+        }
+        if withoutZ.contains(".") {
+            let parts = withoutZ.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+            guard parts.count == 2,
+                  let base = archiveUTCPlain.date(from: String(parts[0])) else {
+                return nil
+            }
+            let fraction = String(parts[1])
+            guard let fractional = Double("0.\(fraction)") else { return nil }
+            return base.addingTimeInterval(fractional)
+        }
+        return archiveUTCPlain.date(from: withoutZ)
+    }
+
     /// Formats `from`/`to` query values for `secure/events` (server uses local wall time, not UTC digits).
     public static func formatEventQuery(_ date: Date) -> String {
         local.string(from: date)
@@ -45,6 +75,16 @@ public enum Timestamp {
 
     private static let eventNoFraction = makeFormatter(
         format: "yyyy-MM-dd'T'HH:mm:ssXXX",
+        timeZone: TimeZone(identifier: "UTC")!
+    )
+
+    private static let archiveUTCNoFraction = makeFormatter(
+        format: "yyyyMMdd'T'HHmmssXXX",
+        timeZone: TimeZone(identifier: "UTC")!
+    )
+
+    private static let archiveUTCPlain = makeFormatter(
+        format: "yyyyMMdd'T'HHmmss",
         timeZone: TimeZone(identifier: "UTC")!
     )
 
