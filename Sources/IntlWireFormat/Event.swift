@@ -99,6 +99,6 @@ public struct Event: Codable, Sendable {
 
 extension Event: CustomStringConvertible {
     public var description: String {
-        "\(objectId)|ts:\(ts ?? "-")|\(text)|id:\(id)"
+        "\(objectId)|\(action ?? "?")|ts:\(ts ?? "-")|\(text)|id:\(id)"
     }
 }
